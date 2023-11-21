@@ -18,7 +18,6 @@ class DaumMovie:
         count_json = json.loads(count_res.text)
         return count_json
 
-
 if __name__ == '__main__':
     d = DaumMovie()
     # u = input('영화 url 을 입력하시오')
