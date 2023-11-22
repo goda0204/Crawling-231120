@@ -1,6 +1,24 @@
 from gtts import gTTS
+from playsound import playsound
+# pip install playsound==1.2.2
+class TextToSpeech:
 
-text = "안녕하세요. 파이썬과 40개의 작품들 입니다."
+    def __init__(self):
+        self.text = ''
 
-tts = gTTS(text=text, lang='ko')
-tts.save(r"3. 텍스트를 음성으로 변환\hi.mp3")
+    def set_text(self, text):
+        self.text = text
+
+    def save_mp3(self, title):
+        tts = gTTS(text=self.text, lang='ko')
+        tts.save(f"./{title}.mp3")
+
+if __name__ == '__main__':
+
+    t= TextToSpeech()
+    title = input('제목을 입력하시오')
+    text = input('변환하려는 문장을 입력하시오.')
+    t.set_text(text)
+    t.save_text(title)
+
+    playsound(f"./{title}.mp3")
