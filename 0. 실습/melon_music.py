@@ -1,34 +1,41 @@
-class MelonMusic:
-    def __init__(self):
-        self.domain = 'https://www.melon.com'
-        self.url = ''
-        self.headers = {'User-Agent': 'Mozilla/5.0'}
-        self.class_name = []
-        self.title_ls = []
-        self.artist_ls = []
-        self.dict = {}
-        self.df = None
+from bs4 import BeautifulSoup
+import requests
 
-    def set_url(self,url):
-        self.url = requests.get(f'{self.domain}/{url}', headers=self.headers).text
+class Melon(object):
+    url = 'https://www.melon.com/chart/index.htm?dayTime='
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    class_name = []
+
+
+    def set_url(self, time):
+        self.url = requests.get(f'{self.url}{time}', headers=self.headers).text
+
 
     def get_ranking(self):
         soup = BeautifulSoup(self.url, 'lxml')
-        ls = soup.find_all(name='p', attrs=({"class":'title'}))
+        print('------- 제목 --------')
+        ls = soup.find_all("div", {"class": self.class_name[0]})
         for i in ls:
-            self.title_ls.append(i.find("a").text)
-        return self.title_ls
+            print(f' {i.find("a").text}')
+        print('------ 가수 --------')
+        ls = soup.find_all("div", {"class": self.class_name[1]})
+        for i in ls:
+            print(f' {i.find("a").text}')
 
-def get_ranking(self):
-    soup = BeautifulSoup(self.url, 'lxml')
-    ls1 = soup.find_all(name='p', attrs=({"class": 'artist'}))
-    for i in ls1:
-        self.artist_ls.append(i.find("a").text)
-    return self.artist_ls
 
-    def insert_dict(self):
-        for i, j in enumerate(self.title_ls):
-            self.dict[j] = self.artist_ls[i]
 
-    def dict_to_dataframe(self):
-        self.df = pd.DataFrame.from_dict(self.dict, orient='index')
+if __name__ == '__main__':
+    melon = Melon()
+    while 1:
+        menu = input('0-exit, 1-input time, 2-output')
+        if menu == '0':
+            break
+        elif menu == '1':
+            melon.set_url(input('스크래핑할 날짜 입력'))  # '2021052511'
+        elif menu == '2':
+            melon.class_name.append('ellipsis rank01')
+            melon.class_name.append('ellipsis rank02')
+            melon.get_ranking()
+        else:
+            print('Wrong number')
+            continue
