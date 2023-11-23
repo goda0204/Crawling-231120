@@ -1,86 +1,77 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# In[1]:
+    def get_search_word(self):
+        return self.search_word
 
+    def execute_search(self):
+        search_word = self.search_word
+        driver = webdriver.Chrome()
+        driver.get("https://www.google.co.kr/imghp?hl=ko&tab=wi&authuser=0&ogbl")
+        elem = driver.find_element("name", "q")
 
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium import webdriver
+        elem.send_keys(search_word)
+        elem.send_keys(Keys.RETURN)
 
-driver = webdriver.Chrome(ChromeDriverManager().install())
+        SCROLL_PAUSE_TIME = 1
+        # Get scroll height
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        while True:
+            # Scroll down to bottom
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Wait to load page
+            time.sleep(SCROLL_PAUSE_TIME)
+            # Calculate new scroll height and compare with last scroll height
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                try:
+                    driver.find_element(By.CSS_SELECTOR, ".mye4qd").click()
+                except:
+                    break
+            last_height = new_height
 
-URL='https://www.google.co.kr/imghp'
-driver.get(url=URL)
+        images = driver.find_elements(By.CSS_SELECTOR, ".rg_i.Q4LuWd")
+        count = 1
+        for image in images:
+            try:
+                image.click()
+                time.sleep(0.5)
 
-driver.implicitly_wait(time_to_wait=10)
+                imgUrl = driver.find_element(
+                    By.XPATH,
+                    '//*[@id="Sva75c"]/div[2]/div[2]/div[2]/div[2]/c-wiz/div/div/div/div[3]/div[1]/a/img[1]'
+                ).get_attribute("src")
 
+                opener = urllib.request.build_opener()
+                opener.addheaders = [
+                    ('User-Agent',
+                     'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')
+                ]
+                urllib.request.install_opener(opener)
+                urllib.request.urlretrieve(imgUrl, f'./image/{search_word}{str(count)}.jpg')
+                count = count + 1
+            except Exception as e:
+                print('e : ', e)
+                pass
 
-# In[2]:
-
-
-from selenium.webdriver.common.keys import Keys
-
-elem = driver.find_element_by_css_selector("#sbtc > div > div.a4bIc > input")
-elem.send_keys("바다")
-elem.send_keys(Keys.RETURN)
-
-
-# In[5]:
-
-
-import time
-elem = driver.find_element_by_tag_name("body") 
-for i in range(60): 
-    elem.send_keys(Keys.PAGE_DOWN) 
-    time.sleep(0.1)
-
-try: 
-    driver.find_element_by_css_selector('#islmp > div > div > div > div.gBPM8 > div.qvfT1 > div.YstHxe > input').click() 
-    
-    for i in range(60): 
-        elem.send_keys(Keys.PAGE_DOWN) 
-        time.sleep(0.1) 
-except: 
-    pass
-
-
-# In[7]:
-
-
-links=[] 
-images = driver.find_elements_by_css_selector("#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img")
-
-for image in images:
-    if image.get_attribute('src') is not None:
-        links.append(image.get_attribute('src'))
-        
-print(' 찾은 이미지 개수:',len(links))
+        driver.close()
 
 
-# In[22]:
+if __name__ == '__main__':
+
+    g = GoogleImage()
+    while 1:
+        menu = input('0. EXIT 1. 구글 이미지에 검색어 입력 2. 구글 이미지 조회하기')
+        if menu == '0':
+            print('프로그램 종료')
+            break
+        elif menu == '1':
+            s = input('검색어 입력: ')
+            g.set_search_word(s)
+
+        elif menu == '2':
+            g.execute_search()
 
 
-import urllib.request
 
-for k,i in enumerate(links):
-    url = i
-    urllib.request.urlretrieve(url, "C:\\파이썬과 40개의 작품들\\19. 구글 이미지 크롤링\\사진다운로드\\"+str(k)+".jpg")
-
-print('다운로드 완료하였습니다.')
-
-URL='https://www.nate.com'
-driver.get(url=URL)
-driver.implicitly_wait(time_to_wait=10)
-
-#driver.find_element_by_css_selector('#olLiveIssueKeyword > li:nth-child(1) > a > span.txt_rank').click()
-
-driver.find_element(By.CSS_SELECTOR,'#olLiveIssueKeyword > li:nth-child(1) > a > span.txt_rank').click()
-
-#nate_results = driver.find_elements_by_css_selector('#search-option > form:nth-child(1) > fieldset > div.issue-kwd > span > a')
-
-nate_results = driver.find_elements(By.CSS_SELECTOR,'#search-option > form:nth-child(1) > fieldset > div.issue-kwd > span > a')
-
-nate_list = []
-for nate_result in nate_results:
-    print(nate_result.text)
-    nate_list.append(nate_result.text)
+        else:
+            print('다시 입력')
+            continue
